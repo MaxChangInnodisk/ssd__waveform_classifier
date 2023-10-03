@@ -6,7 +6,7 @@ Using iVIT to build a classifier that could classify SSD model name via wareform
     <details>
     <summary>Notice: have to add Python3.8 to PATH ( Screenshot )</summary>
     
-    ![py-installer](docs\figures\py-3.8.10-installer.jpg)
+    ![py-installer](docs/figures/py-3.8.10-installer.jpg)
     
     </details> 
     
@@ -14,7 +14,7 @@ Using iVIT to build a classifier that could classify SSD model name via wareform
     <details>
     <summary>C++ libraries are also required for the installation on Windows</summary>
     
-    ![vs-redistributable-file](docs\figures\ov-ensure-install-plugin.jpg)
+    ![vs-redistributable-file](docs/figures/ov-ensure-install-plugin.jpg)
     
     </details> 
     
