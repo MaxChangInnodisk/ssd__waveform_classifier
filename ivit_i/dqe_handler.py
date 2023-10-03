@@ -1,143 +1,182 @@
 import cv2, sys, os, shutil, json, glob
 import logging as log
 from collections import defaultdict
+from typing import Any, Tuple, Dict, Literal
 
 try:
-    from ivit_i.utils import read_ini, get_data, check_dir, clean_dir, write_json
+    from ivit_i.utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
     from ivit_i.dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
     from ivit_i.wmic import get_test_product
 
 except:
-    from utils import read_ini, get_data, check_dir, clean_dir, write_json
+    from utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
     from dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
     from wmic import get_test_product
 
 # Global
-POS = "positive"
-NEG = "negative"
-IMG_EXT = ".jpg"
-JSON_EXT = ".json"
+RK          = "R"
+WK          = "W"
+POS         = "positive"
+NEG         = "negative"
+PASS        = "PASS"
+FAIL        = "FAIL"
+IMG_EXT     = ".jpg"
+JSON_EXT    = ".json"
 
+def comb_name(items: list = [], sep: str="_"):
+    return sep.join(items)
 
+# GT Helper
+class DqeGT():
+        
+    def __init__(self) -> None:
+        
+        target_disks = get_test_product()
+        if len(target_disks) > 1:
+            raise RuntimeError("The program only support one testing disk.")
+        
+        self.ans = target_disks[0]
+
+    def update_by_labels(self, labels: list) -> None:
+        
+        for label in labels:
+            if label in self.ans: 
+                self.ans = label
+                break
+        else:
+            self.ans = os.path.join("OTHERS", f"{self.ans}")
+        log.warning(f'Updated ground truth: {self.ans}')
+
+    def compare(self, label: str) -> bool:
+        return label == self.ans
+    
 # Mission
+
 class DqeMission():
 
     def __init__(self, config: dict):
         
         # Get folder
-        self.retrain_dir = os.path.join(config["output"]["retrain_dir"], "retrain" )
-        self.history_dir = os.path.join(config["output"]["history_dir"], "history" )
-        self.current_dir = os.path.join(config["output"]["current_dir"], "current" )
-        clean_dir(self.current_dir)
+        self.ret_dir = os.path.join(config["output"]["retrain_dir"], "retrain" )
+        self.his_dir = os.path.join(config["output"]["history_dir"], "history" )
+        self.cur_dir = os.path.join(config["output"]["current_dir"], "current" )
+        clean_dir(self.cur_dir)
 
         # Get target disk
-        target_disks = get_test_product()
-        if len(target_disks) > 1:
-            raise RuntimeError("The program only support one testing disk.")
-        self.GT = target_disks[0]
+        self.GT = DqeGT()
 
-        # Summary
-        self.run_times = 0
-        self.results = defaultdict()
-        self.temp_results = defaultdict()
 
-    def rename(self, dout: DqeOuput):
-        din = dout.input
-        index, label, score = dout.output[0]
-        return "{date}_{sn}_{rw}_{size}_{speed}_{label}_{score}".format(
-            date = dout.date,
-            sn = din.serial_number,
-            rw = din.keyword,
-            size = din.size,
-            speed = din.speed,
-            label = label,
-            score = round(score*100)
-        )
- 
-    def update_GT_by_labels(self, labels: list):
-        for label in labels:
-            if label in self.GT:
-                self.GT = label
-                return
+    def verify(self, models: dict):
+        """
+        outputs: {
+            'R': {
+                'input': DqeInput,
+                'output': DqeOutput ( default is [] )
+            },
+            'W': {...}
+        }
+        """
 
-        temp_gt = self.GT
-        self.GT = os.path.join("OTHERS", f"{temp_gt}")
+        if RK not in models or WK not in models:
+            raise KeyError(f"Ensure the models has two. {len(models)}")
 
-    def compare_GT(self, dout: DqeOuput):
-        _, label, score = dout.output[0]
-        stats = POS if label == self.GT else NEG
-        return stats
-    
-    def dump_results(self, dout: DqeOuput):
+        if [] in [ models[RK].output, models[WK].output ]:
+            raise RuntimeError(
+                f"Ensure the two outputs is available." ) 
+
+        if models[RK].labels != models[WK].labels:
+            raise ValueError(
+                f"The model label is not similar. ( {len(models[RK].labels)} vs. {len(models[WK].labels)} )")
+
+    def get_retrain_path(self, status: str, din: DqeInput, dout: DqeOuput) -> str:
         
-        pass
+        # Combine name
+        fname = comb_name( [
+            dout.date, din.serial_number, din.keyword, din.size, din.speed ] )
 
-    def handle_files(self, dout: DqeOuput, stats:str):
-                
-        # Combine Route
-        pure_name = self.rename(dout=dout)
+        # Combine directory
+        order_dir = [ self.ret_dir, status, din.keyword, self.GT.ans ]
+        trg_dir = os.path.join(*order_dir)
+        if not os.path.exists(trg_dir): os.makedirs(trg_dir)
+        # print(trg_dir, fname)
+        return os.path.abspath(os.path.join(trg_dir, fname))
+
+    def get_history_path(self, status: str, din: DqeInput, dout: DqeOuput) -> str:
+
+        # Combine name
+        fname = comb_name( [
+            dout.date, din.serial_number, din.keyword, din.size, din.speed, status ] )
+
+        # Combine directory
+        order_dir = [ self.his_dir, self.GT.ans, comb_name([dout.date, din.serial_number]) ]
+        trg_dir = os.path.join(*order_dir)
+        if not os.path.exists(trg_dir): os.makedirs(trg_dir)
+        # print(trg_dir, fname)
+        return os.path.abspath(os.path.join(trg_dir, fname))
+
+    def get_current_path(self, result: str, status: str, din: DqeInput, dout: DqeOuput) -> str:
         
-        image_name = f"{pure_name}.jpg"
-        ground_truth_dir = os.path.join(dout.input.keyword, self.GT)
-        status_dir = os.path.join(stats, ground_truth_dir)
+        # Combine name
+        fname = comb_name( [
+            dout.date, din.serial_number, din.keyword, din.size, din.speed, status ] )
+
+        # Combine directory
+        tmp_dir = comb_name( [
+            dout.date, din.serial_number, self.GT.ans, result ] )
+        trg_dir = os.path.join(self.cur_dir, tmp_dir)
+        if not os.path.exists(trg_dir): os.makedirs(trg_dir)
+        # print(trg_dir, fname)
+        return os.path.abspath(os.path.join(trg_dir, fname))
+
+    def mission(self, models: Dict[str, DqeModel]) -> None:
         
-        # Helper
-        def image_path_helper(target: str, status_dir:str=status_dir, fname:str=image_name):
-            return os.path.join( check_dir(os.path.join(target, status_dir)), fname )
-
-        # Retrain
-        re_image = image_path_helper(self.retrain_dir)
-        dout.input.save_buffer(re_image)
-
-        # History       
-        ht_image = image_path_helper(self.history_dir)
-        dout.input.copy_file(ht_image)
-
-        # Current
-        cu_image = image_path_helper(self.current_dir)
-        dout.input.copy_file(cu_image)
-
-        # Update Results
-        self.temp_results["retrain"] = re_image
-        self.temp_results["history"] = ht_image
-        self.temp_results["current"] = cu_image
-
-        # Dump file
-        for _file in [ ht_image.replace(IMG_EXT, JSON_EXT), cu_image.replace(IMG_EXT, JSON_EXT)]:
-            write_json(self.temp_results, _file)
-
-    def __call__(self, dout: DqeOuput, dmodel: DqeModel= None):
+        # Prepare
+        self.verify(models)
+        self.GT.update_by_labels(models[RK].labels)
         
-        stats = self.compare_GT(dout)
-
-        # Update basic information
-        self.temp_results["input_path"] = dout.input.path
-        self.temp_results["detected"] = f"{dout.output[0][1]} {round(dout.output[0][2]*100)}%"
-        self.temp_results["ground truth"] = self.GT
-        self.temp_results["status"] = stats
-        self.temp_results["details"] = dout.output
+        # Get result
+        self.result = PASS \
+            if self.GT.compare(models[RK].output.output[1]) \
+                and self.GT.compare(models[WK].output.output[1]) \
+                    else FAIL
         
-        # Update model information
-        if dmodel:
-            self.temp_results["model"] = {
-                "name": dmodel.name,
-                "labels": dmodel.labels,
-                "input": dmodel.input_shape
+        # Parsing
+        for key, model in models.items():
+
+            din, dout = model.input, model.output
+            stats = POS if self.GT.compare(dout.output[0][1]) else NEG
+
+            # File Handler
+            re_name = self.get_retrain_path(status=stats, din=din, dout=dout)
+            cu_name = self.get_current_path(result=self.result, status=stats, din=din, dout=dout)
+            hi_name = self.get_history_path(status=stats, din=din, dout=dout)
+            
+            # Combine result
+            saved_json = {
+                "status": stats,
+                "name": din.name,
+                "detected": f"{dout.output[0][1]}",
+                "ground_truth": self.GT.ans,
+                "source_path": din.path,
+                "retrain_path": re_name+IMG_EXT,
+                "current_path": cu_name+IMG_EXT,
+                "history_path": hi_name+IMG_EXT,
+                "output": dout.output,
+                "model": {
+                    "name": model.name,
+                    "labels": model.labels,
+                    "input_shape": model.input_shape
+                }
             }
+            
+            # Save Image ( or Copy ) and Json
+            for name in [ re_name, cu_name, hi_name ]:
+                copy_file(din.path, name+IMG_EXT)                
+                write_json(saved_json, name+JSON_EXT)
 
-        # File
-        self.handle_files(dout=dout, stats=stats)
-
-        # Update running times
-        self.run_times += 1
-        self.results[dout.input.name] = self.temp_results 
-
-    def print_information(self):
-        print('[DQE Results]')
-        for fname, fresult in self.results.items():
-            print(f"* {fname}")
-            for key, val in fresult.items():
-                print(f"\t* {key} = {val}")
+             
+    def __call__(self, models: Dict[str, DqeModel]) -> Any:
+        return self.mission(models)
 
 
 # Testing
@@ -170,8 +209,9 @@ def main():
     config_path = r"config.ini"
     config = read_ini(config_path)
 
-    # Get data
+    # Get data, ensure the image_list's length is 2
     image_list = get_data(config["input"]["keyword"], config["input"]["input_dir"])
+    assert len(image_list)==2, f"Expect two images in folder, but got {len(image_list)} !"
 
     # Prepare process funcitno
     # dprocess = DqeProcess(
@@ -182,23 +222,19 @@ def main():
         module_path=r"process\first_time.py")
 
     # Prepare Model and Output 
-    models, outputs, missions = defaultdict(), defaultdict(), defaultdict()
+    models = defaultdict()
 
+    # Init Mission and update GT
+    dmission = DqeMission(config=config)
+    
     # Load Model, Output, Mission
-    keywords, config_keywords = ["R", "W" ], ["read", "write"]
+    keywords, config_keywords = [RK, WK ], ["read", "write"]
     for model_key, config_key in zip(keywords, config_keywords):
         try:
             models[model_key] = DqeModel(config[f"model.{config_key}"])
-            outputs[model_key] = DqeOuput()    
-
-            # Init Mission and update GT
-            missions[model_key] = DqeMission(config=config)
-            missions[model_key].update_GT_by_labels(models[model_key].labels)
-
         except DqeConfigError as err:
             log.warning("The model setting is wrong. please check again")
             # raise err
-
 
     # Do inference
     for image in image_list:
@@ -214,16 +250,10 @@ def main():
         if not (din.keyword in models): continue
 
         # Inference
-        dout = outputs[din.keyword]
-        models[din.keyword].inference_callback(din, dout)
+        models[din.keyword].inference(din)
 
-        # DQE Mission: After Inference
-        missions[din.keyword](dout, models[din.keyword])
-
-    # Summary Mission
-    for key in missions.keys():    
-        missions[key].print_information()
-
+    # DQE Mission: After Inference
+    dmission(models)
 
 if __name__ == "__main__":
     main()
