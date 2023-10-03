@@ -48,6 +48,8 @@ def write_json(output:dict, json_file:str):
     with open(json_file, "w") as jsonfile:
         json.dump(output, jsonfile, indent=4, cls=NpEncoder)
 
+def copy_file(src: str, dst: str):
+    return shutil.copy(src, dst)
 
 def find_folder_with_key(keyword: str, path: str= "./"): 
     input_folders = glob.glob(os.path.join(path, f"*{keyword}*"))
