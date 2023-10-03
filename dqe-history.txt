@@ -1,34 +1,27 @@
 [23-09-26 17:18:30]
-* 20210816000000016_R_74.528_1298.8.png
-    * Input Path = C:\\Users\\DQE\\Desktop\\aida64\aida64v598_B0012210140050002_test\20210816000000016_R_74.528_1298.8.png
-    * Detected = 4TG2-P
-    * Ground Truth = 3TE6
-    * Status = Negative
-    * Retrain = .\retrain\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
-    * History = .\history\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
-    * Current = .\current\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
-    * AI Details = [(9, '4TG2-P', 0.607424), (4, '3TG6-P', 0.1834874), (10, '4TS2-P', 0.13339925)]
 
-* 20210816000000018_R_149.0      48_1658.9.png
-    * Input Path = C:\\Users\\DQE\\Desktop\\aida64\aida64v598_B0012210140050002_test\20210816000000018_R_149.048_1658.9.png
-    * Detected = 3TG6-P
-    * Ground Truth = 3TE6
-    * Status = Negative
-    * Retrain = .\retrain\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
-    * History = .\history\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
-    * Current = .\current\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
-    * AI Details = [(4, '3TG6-P', 0.9354056)]
+* 20210816000000016
 
-* Model
-    * READ
-        * Model Name: .\model\read\AIDA64_ALL_R.xml
-        * Label Number = 11
-        * Labels = [ 3IE7, 3TE6, 3TE7, 3TEA, 3TG6-P, 3TO7, 3TS6-P, 4IG2-P, 4TE3, 4TG2-P, 4TS2-P ]
+    * Status = negative
 
-    * WRITE
-        * Model Name: .\model\write\AIDA64_ALL_W.xml
-        * Label Number = 11
-        * Labels = [ 3IE7, 3TE6, 3TE7, 3TEA, 3TG6-P, 3TO7, 3TS6-P, 4IG2-P, 4TE3, 4TG2-P, 4TS2-P ]
+    * 20210816000000016_R_74.528_1298.8.png
+        * Status = negative
+        * Input Path = C:\\Users\\DQE\\Desktop\\aida64\aida64v598_B0012210140050002_test\20210816000000016_R_74.528_1298.8.png
+        * Detected = 4TG2-P
+        * Ground Truth = 3TE6
+        * Retrain = .\retrain\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
+        * History = .\history\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
+        * Current = .\current\negative\3TE6\R\230926-173704_20210816000000016_R_74.528_1298.8_4TG2-P_61.jpg
+        * AI Details = [(9, '4TG2-P', 0.607424), (4, '3TG6-P', 0.1834874), (10, '4TS2-P', 0.13339925)]
 
-* ScreenShot Process
-    * Module: .\process\process_image_with_substract_Panda.py
+* 20210816000000018
+    * Status = negative
+    * 20210816000000018_R_149.0      48_1658.9.png
+        * Input Path = C:\\Users\\DQE\\Desktop\\aida64\aida64v598_B0012210140050002_test\20210816000000018_R_149.048_1658.9.png
+        * Detected = 3TG6-P
+        * Ground Truth = 3TE6
+        * Status = negative
+        * Retrain = .\retrain\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
+        * History = .\history\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
+        * Current = .\current\negative\3TE6\R\230926-173704_20210816000000018_R_149.048_1658.9_3TG6-P_94.jpg
+        * AI Details = [(4, '3TG6-P', 0.9354056)]
