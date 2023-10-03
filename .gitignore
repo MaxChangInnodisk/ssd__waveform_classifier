@@ -1,0 +1,13 @@
+__pycache__/
+openvino_env/
+
+current/
+history/
+retrain/
+
+model/
+process/
+test/
+
+**/temp*
+real_data/
