@@ -4,21 +4,37 @@ import numpy as np
 from datetime import datetime
 import shutil
 import json
+import logging as log
 
 try:
+    from ivit_i.core.models import iClassification
     from ivit_i.utils import import_module, NpEncoder
 except:
+    from core.models import iClassification
     from utils import import_module, NpEncoder
+
+# --------------------------------------------------------------------------------
+
+class DqeModel: None
+class DqeProcess: None
+class DqeInput: None
+class DqeOuput: None
+class DqeHistoryer: None
+
+# --------------------------------------------------------------------------------
 
 class DqeKeywordError(Exception):
     def __init__(self, message:str="") -> None:
         self.message = message
         super().__init__(self.message)
 
+
 class DqeConfigError(Exception):
     def __init__(self, message:str="") -> None:
         self.message = message
         super().__init__(self.message)
+
+# --------------------------------------------------------------------------------
 
 class DqeProcess:
 
@@ -172,6 +188,65 @@ class DqeOuput:
         with open(save_to, "w") as jsonfile:
             json.dump(self.output, jsonfile, indent=4, cls=NpEncoder)
 
+
+class DqeModel:
+
+    def __init__(self, config: dict):
+
+        self.config = config
+        for _key in [ "detect_data_keyword", "model_path", "label_path", "threshold" ]:
+            if config[_key] in [ None, "" ]:
+                raise DqeConfigError("Got empty value in config.")
+
+        self.name = os.path.splitext(os.path.basename(config["model_path"]))[0]
+        self.keyword = config["detect_data_keyword"]
+
+        self.model = iClassification(
+            model_path = config["model_path"],
+            label_path = config["label_path"],
+            confidence_threshold = float(config["threshold"]),
+            device = config.get("device", "CPU") )
+        self.labels = self.model.get_labels()
+        self.input_shape = self.model.model.inputs[self.model.model.image_blob_name].shape
+
+        log.info("Initialize DqeModel. NAME: {}, KEYWORD: {}, LABELS: {}".format(
+            self.name, self.keyword, len(self.labels)))
+
+    def check_keyword(func):
+        def wrap(self, *args, **kwargs):
+            input_key = args[0].keyword
+            model_key = self.keyword
+            if (input_key != model_key):
+                raise DqeKeywordError("Keyword not match !!!! Input: {}, Model: {}".format(
+                    input_key, model_key
+                ))
+            return func(self, *args, **kwargs)
+        return wrap
+
+    @check_keyword
+    def inference(self, input: DqeInput, output: DqeOuput) -> DqeOuput:
+        """ Do inference with DqeInput and return DqeOutput """
+        results = self.model.inference(input.buffer)
+        return DqeOuput(input=input, output=results)
+    
+    @check_keyword
+    def inference_callback(self, input: DqeInput, output: DqeOuput):
+        output.update(
+            input=input, 
+            output=self.model.inference(input.buffer)
+        )
+    
+    def print_information(self):
+        print('[DQE Model]')
+        print('* name: ', self.name)
+        print('* keyword: ', self.keyword)
+        print('* labels: ', self.labels)
+
+class DqeHistoryer:
+    """ Generate history """
+    pass
+
+# --------------------------------------------------------------------------------
 
 def _test_basic_usage():
 
