@@ -164,7 +164,7 @@ class DqeOuput:
         self.update(input=input, output=output)
 
     def format_date(self, timestamp) -> str:
-        return datetime.strftime(timestamp, "%y%m%d-%H%M%S")
+        return datetime.strftime(timestamp, "%y%m%d%H%M%S")
 
     def print_information(self):
         print("\n[DQE Output]")
@@ -209,6 +209,10 @@ class DqeModel:
         self.labels = self.model.get_labels()
         self.input_shape = self.model.model.inputs[self.model.model.image_blob_name].shape
 
+        # For IO
+        self.input, self.output = None, None
+
+
         log.info("Initialize DqeModel. NAME: {}, KEYWORD: {}, LABELS: {}".format(
             self.name, self.keyword, len(self.labels)))
 
@@ -224,10 +228,13 @@ class DqeModel:
         return wrap
 
     @check_keyword
-    def inference(self, input: DqeInput, output: DqeOuput) -> DqeOuput:
+    def inference(self, input: DqeInput) -> DqeOuput:
         """ Do inference with DqeInput and return DqeOutput """
         results = self.model.inference(input.buffer)
-        return DqeOuput(input=input, output=results)
+
+        # Store results
+        self.input = input
+        self.output = DqeOuput(input=input, output=results)
     
     @check_keyword
     def inference_callback(self, input: DqeInput, output: DqeOuput):
