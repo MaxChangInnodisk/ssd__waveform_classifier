@@ -4,11 +4,13 @@ from collections import defaultdict
 from typing import Any, Tuple, Dict, Literal
 
 try:
+    from ivit_i.common import dqe_logger
     from ivit_i.utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
     from ivit_i.dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
     from ivit_i.wmic import get_test_product
 
 except:
+    from common import dqe_logger
     from utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
     from dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
     from wmic import get_test_product
@@ -65,6 +67,8 @@ class DqeMission():
         # Get target disk
         self.GT = DqeGT()
 
+        # Logger
+        self.dlog = dqe_logger(log_folder=self.his_dir)
 
     def verify(self, models: dict):
         """
@@ -140,6 +144,12 @@ class DqeMission():
                 and self.GT.compare(models[WK].output.output[1]) \
                     else FAIL
         
+        # Log out
+        self.dlog.info("-------------------------"*2)
+        self.dlog.info("[Basic]")
+        new_date = [ models[RK].output.date[i:i+2] for i in range(0, len(models[RK].output.date),2) ]
+        self.dlog.info("Date: {}".format('/'.join(new_date[0:3])+' '+':'.join(new_date[3:])))
+
         # Parsing
         for key, model in models.items():
 
@@ -173,6 +183,21 @@ class DqeMission():
             for name in [ re_name, cu_name, hi_name ]:
                 copy_file(din.path, name+IMG_EXT)                
                 write_json(saved_json, name+JSON_EXT)
+
+            # Log out
+            self.dlog.info("")
+            self.dlog.info("[Results]")
+            self.dlog.info("  - SN: {}".format(din.name.split('_')[0]))
+            self.dlog.info("    - {}".format(din.keyword))
+            self.dlog.info("      - InputName: {}".format(saved_json["name"]))
+            self.dlog.info("      - InputPath: {}".format(saved_json["source_path"]))
+            self.dlog.info("      - Status: {}".format(saved_json["status"]))
+            self.dlog.info("      - GroundTruth: {}".format(saved_json["ground_truth"]))
+            self.dlog.info("      - Detected: {}".format(saved_json["detected"]))
+            self.dlog.info("      - Retrain: {}".format(saved_json["retrain_path"]))
+            self.dlog.info("      - History: {}".format(saved_json["history_path"]))
+            self.dlog.info("      - Current: {}".format(saved_json["current_path"]))
+            self.dlog.info("      - AI_Detail: {}".format(saved_json["output"]))
 
              
     def __call__(self, models: Dict[str, DqeModel]) -> Any:
