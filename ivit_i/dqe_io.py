@@ -164,7 +164,7 @@ class DqeOuput:
         self.update(input=input, output=output)
 
     def format_date(self, timestamp) -> str:
-        return datetime.strftime(timestamp, "%y%m%d%H%M%S")
+        return datetime.strftime(timestamp, "%y%m%d%H%M")
 
     def print_information(self):
         print("\n[DQE Output]")
@@ -248,6 +248,7 @@ class DqeModel:
         print('* name: ', self.name)
         print('* keyword: ', self.keyword)
         print('* labels: ', self.labels)
+
 
 class DqeHistoryer:
     """ Generate history """
