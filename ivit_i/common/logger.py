@@ -72,7 +72,7 @@ def ivit_logger(
     # file_handler = logging.FileHandler(os.path.join('/workspace', log_name), write_mode, 'utf-8')
     
     # Create Logs Folder
-    log_folder = os.path.join('/workspace', log_folder)
+    log_folder = os.path.join('.', log_folder)
     if not os.path.exists(log_folder):
         print('Create Logs Folder ...')
         os.makedirs(log_folder)
