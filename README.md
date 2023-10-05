@@ -19,7 +19,7 @@ Classify the SSD read/write waveform by using iVIT.
 1. Modify the path of each files in [`config.ini`](config.ini).
 2. Launch [`classifier.exe`](classifier.exe).
 
-![sample](docs\figures\swc.jpg)
+![sample](./docs/figures/swc.jpg)
 
 # For Developer
 * Prepare environment
