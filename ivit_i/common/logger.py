@@ -131,7 +131,8 @@ def dqe_logger(
     if clear_log and os.path.exists(log_name):
         os.remove(log_name)
 
-    formatter = logging.Formatter( "%(asctime)s %(message)s", "%H:%M:%S")
+    # formatter = logging.Formatter( "%(asctime)s %(message)s", "%H:%M:%S")
+    formatter = logging.Formatter( "%(message)s")
     
     # NOTE: before v1.2.1
     # file_handler = logging.FileHandler(os.path.join('/workspace', log_name), write_mode, 'utf-8')
