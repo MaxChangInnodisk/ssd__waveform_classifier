@@ -145,10 +145,13 @@ class DqeMission():
                     else FAIL
         
         # Log out
-        self.dlog.info("-------------------------"*2)
+        self.dlog.info("-"*80)
+        self.dlog.info("")
         self.dlog.info("[Basic]")
         new_date = [ models[RK].output.date[i:i+2] for i in range(0, len(models[RK].output.date),2) ]
         self.dlog.info("Date: {}".format('/'.join(new_date[0:3])+' '+':'.join(new_date[3:])))
+        self.dlog.info("")
+        self.dlog.info("[Results]")
 
         # Parsing
         for key, model in models.items():
@@ -185,8 +188,7 @@ class DqeMission():
                 write_json(saved_json, name+JSON_EXT)
 
             # Log out
-            self.dlog.info("")
-            self.dlog.info("[Results]")
+
             self.dlog.info("  - SN: {}".format(din.name.split('_')[0]))
             self.dlog.info("    - {}".format(din.keyword))
             self.dlog.info("      - InputName: {}".format(saved_json["name"]))
@@ -198,11 +200,10 @@ class DqeMission():
             self.dlog.info("      - History: {}".format(saved_json["history_path"]))
             self.dlog.info("      - Current: {}".format(saved_json["current_path"]))
             self.dlog.info("      - AI_Detail: {}".format(saved_json["output"]))
-
+            self.dlog.info("")
              
     def __call__(self, models: Dict[str, DqeModel]) -> Any:
         return self.mission(models)
-
 
 # Testing
 def _test_model_usage():
@@ -278,8 +279,12 @@ def main():
         models[din.keyword].inference(din)
 
     # DQE Mission: After Inference
-    dmission(models)
-
+    try:
+        dmission(models)
+    except Exception as e:
+        log.error("Mission Failed !")
+        log.exception(e)
+    
 if __name__ == "__main__":
     main()
 
