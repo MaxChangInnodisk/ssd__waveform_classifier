@@ -1,5 +1,7 @@
 import logging as log
 import subprocess as sp
+
+from ivit_i import dqe_handler
 from ivit_i.utils import check_dir, read_json, read_ini
 
 def get_exec_cmd(exec_key: str, config: dict) -> str:
@@ -35,8 +37,12 @@ def main():
     config = read_ini("config.ini")
     # Exec
     run_service(service="aida64", config=config)    
-    run_service(service="ivit", config=config)    
     
+    try:
+        dqe_handler.main()
+    except Exception as e:
+        log.exception(e)
+            
     key = input("\n\nPress ANY to leave ...")
 
 if __name__ == "__main__":
