@@ -12,3 +12,8 @@ logs/
 
 **/temp*
 real_data/
+
+build
+dist
+*.spec
+*.exe
