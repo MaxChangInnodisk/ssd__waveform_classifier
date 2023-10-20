@@ -7,6 +7,18 @@ import subprocess as sp
 from ivit_i import dqe_handler
 from ivit_i.utils import check_dir, read_json, read_ini
 
+import ctypes
+
+# 请求管理员权限运行cmd.exe
+# ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", "/k", None, 1)
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+    
+assert is_admin(), "Ensure using Administrator ..."
+    
 def get_exec_cmd(exec_key: str, config: dict) -> str:
     
     exec_info = config[exec_key]
@@ -36,8 +48,8 @@ def run_service(service:str, config:dict, username: str=''):
             exec_key=service,
             config=config )
         
-        ret = sp.run(f"cd {trg_folder} && {exec_cmd}", shell=True)
-
+        exec_cmd = f"cd {trg_folder} && {exec_cmd}"
+        sp.run(exec_cmd, shell=True)
 
     except KeyboardInterrupt:
         return None
@@ -48,7 +60,12 @@ def main():
     run_service(service="aida64", config=config)
 
     try:
+        # trg_folder = os.path.abspath(os.path.dirname(__file__))
+        # exec_cmd = f"cd {trg_folder} && {config['ivit']['exec']}"
+        # process = sp.Popen(exec_cmd, shell=True)
+        # process.wait()
         dqe_handler.main()
+
     except Exception as e:
         log.exception(e)
             

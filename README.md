@@ -14,10 +14,10 @@ Classify the SSD read/write waveform by using iVIT.
 </table>
  
 # How to use?
-
+1. Mount innodisk network device using [MapNetworkDrive.bat](./MapNetworkDrive.bat) 
 1. Prepare AIDA64, Model, Process file.
 1. Modify the path of each files in [`config.ini`](config.ini).
-2. Launch [`classifier.exe`](classifier.exe).
+2. Launch [`classifier.exe`](classifier.exe) with administrator.
 
 ![sample](./docs/figures/swc.jpg)
 
