@@ -1,3 +1,6 @@
+# -*- coding: UTF-8 -*-
+
+import os
 import logging as log
 import subprocess as sp
 
@@ -16,7 +19,7 @@ def get_exec_cmd(exec_key: str, config: dict) -> str:
 def check_status(service:str, config:dict):
     return int(config[service]["enable"])
 
-def run_service(service:str, config:dict):
+def run_service(service:str, config:dict, username: str=''):
     status = check_status(service, config)
     log.info('--------------------------------------------------------------------------------')
     log.info(f"SERVICE {service}: {'ON' if status else 'OFF'}.")
@@ -25,10 +28,16 @@ def run_service(service:str, config:dict):
     if not status: return None
 
     try:
-        cmd = get_exec_cmd( 
+        # Move to target folder
+        trg_folder = os.path.abspath(os.path.dirname(config[service]["exec"]))
+        config[service]["exec"] = f'.\{os.path.basename(config[service]["exec"])}'
+
+        exec_cmd = get_exec_cmd( 
             exec_key=service,
-            config=config)
-        return sp.run(cmd, shell=True)
+            config=config )
+        
+        ret = sp.run(f"cd {trg_folder} && {exec_cmd}", shell=True)
+
 
     except KeyboardInterrupt:
         return None
@@ -36,8 +45,8 @@ def run_service(service:str, config:dict):
 def main():
     config = read_ini("config.ini")
     # Exec
-    run_service(service="aida64", config=config)    
-    
+    run_service(service="aida64", config=config)
+
     try:
         dqe_handler.main()
     except Exception as e:
