@@ -24,6 +24,7 @@ pyinstaller \
 --icon={ICON_PATH} \
 --add-data \"{LIB}:.\\openvino\\libs\" \
 --clean \
+--hidden-import=codecs \
 -F {MAIN_PATH}")
 
 os.system(f"move {EXEC_PATH} {ROOT}")

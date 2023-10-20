@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 import os
 import sys
 import json
@@ -27,7 +29,9 @@ def read_ini(config_file: str) -> configparser.ConfigParser:
     if not os.path.exists(config_file):
         raise FileNotFoundError("Can not find config file. ({})".format(config_file))
     config = configparser.ConfigParser()
-    config.read(config_file)
+    # config.read(config_file, encoding='UTF-8')
+    config.read(config_file, encoding='utf-8-sig')
+    # print(config["output"]["history_dir"])
     return config
 
 

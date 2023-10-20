@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 import cv2, sys, os, shutil, json, glob
 import logging as log
 from collections import defaultdict
@@ -139,9 +141,10 @@ class DqeMission():
         self.GT.update_by_labels(models[RK].labels)
         
         # Get result
+        # print(models[RK].output.output)
         self.result = PASS \
-            if self.GT.compare(models[RK].output.output[1]) \
-                and self.GT.compare(models[WK].output.output[1]) \
+            if self.GT.compare(models[RK].output.output[0]) \
+                and self.GT.compare(models[WK].output.output[0]) \
                     else FAIL
         
         # Log out

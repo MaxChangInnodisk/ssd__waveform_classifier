@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 # Copyright (c) 2023 Innodisk Corporation
 # 
 # This software is released under the MIT License.
@@ -138,6 +140,9 @@ def dqe_logger(
     # file_handler = logging.FileHandler(os.path.join('/workspace', log_name), write_mode, 'utf-8')
     
     # Create Logs Folder
+    check_dir = os.path.dirname(log_folder)
+    if not os.path.exists(check_dir):
+        raise FileNotFoundError('Can not find the folder: {}'.format(check_dir))
     log_folder = os.path.join('.', log_folder)
     if not os.path.exists(log_folder):
         print('Create Logs Folder ...')
