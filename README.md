@@ -14,7 +14,7 @@ Classify the SSD read/write waveform by using iVIT.
 </table>
  
 # How to use?
-*** Ensure all behaviours execute with `Administrator`. *** 
+*** Ensure all behavior execute with `Administrator`. *** 
 
 1. Mount innodisk network device using [MapNetworkDrive.bat](./MapNetworkDrive.bat) 
     * NOTE: must execute file.
