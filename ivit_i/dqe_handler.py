@@ -246,9 +246,6 @@ def main():
     dprocess = DqeProcess(
         module_name="process", 
         module_path=config["process"]["module_path"])
-    # dprocess = DqeProcess(
-    #     module_name="process_with_substract", 
-    #     module_path=r"process\first_time.py")
 
     # Prepare Model and Output 
     models = defaultdict()
@@ -265,19 +262,27 @@ def main():
             log.warning("The model setting is wrong. please check again")
             # raise err
 
-    # Do inference
-    for image in image_list:
-        
+    # Collect input
+    dins = []
+    for image in image_list:    
         # Define DqeInput and get keyword
         try:
-            din = DqeInput(image_path=image, dqe_process=dprocess)
+            dins.append(
+                DqeInput(image_path=image, dqe_process=dprocess)
+            )
         except:
             log.warning("The input image is wrong: {}".format(image))
             continue
 
+    if len(dins)!=2:
+        raise RuntimeError(f'The should must has two image, but get {len(dins)}')
+    if dins[0].keyword==dins[1].keyword:
+        raise RuntimeError(f"Both of two images is for {dins[0].keyword}.")
+
+    # Do inference
+    for din in dins:
         # Checking models is ready
         if not (din.keyword in models): continue
-
         # Inference
         models[din.keyword].inference(din)
 
