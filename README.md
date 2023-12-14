@@ -101,7 +101,7 @@ detect_data_keyword = W
         # Launch environment
         openvino_env\\Scripts\\activate.bat
         # Install OpenVINO
-        python -m pip install openvino==2022.3.0
+        python -m pip install openvino==2022.3.0 pyinstaller
         # Verify
         python -c "from openvino.runtime import Core; print(Core().available_devices)"
         ```
