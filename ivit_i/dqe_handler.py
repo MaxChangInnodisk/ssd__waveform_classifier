@@ -243,12 +243,12 @@ def main():
     assert len(image_list)==2, f"Expect two images in folder, but got {len(image_list)} !"
 
     # Prepare process funcitno
-    # dprocess = DqeProcess(
-    #     module_name="process", 
-    #     module_path=config["process"]["module_path"])
     dprocess = DqeProcess(
-        module_name="process_with_substract", 
-        module_path=r"process\first_time.py")
+        module_name="process", 
+        module_path=config["process"]["module_path"])
+    # dprocess = DqeProcess(
+    #     module_name="process_with_substract", 
+    #     module_path=r"process\first_time.py")
 
     # Prepare Model and Output 
     models = defaultdict()
