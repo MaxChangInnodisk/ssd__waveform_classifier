@@ -47,7 +47,8 @@ class DqeProcess:
             return
 
         if not os.path.exists(module_path):
-            raise FileNotFoundError("Ensure module_path is correct !")
+            raise FileNotFoundError(
+                f"Ensure module_path is correct ! ({module_path}) ")
         
         self.module_name = module_name
         self.module_path = module_path
