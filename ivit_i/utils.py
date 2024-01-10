@@ -83,32 +83,6 @@ def get_label(label_path: str):
             ret.append(line)
     return ret
 
-def ensure_win():
-    assert platform.system() == "Windows", "Ensure the platform is Windows"
-
-
-def get_os_product():
-    ensure_win()
-    command = \
-        "wmic /namespace:\\\\root\\microsoft\\windows\\storage path msft_disk WHERE \"BootFromDisk='true' and IsSystem='true'\" get model"
-    p = sp.run(command, shell=True, capture_output=True, text=True)
-    ret = p.stdout.replace('Model', '').strip()   
-    return [ info.strip() for info in ret.split('\n') if info != "" ]
-
-def get_all_product():
-    ensure_win()
-    command = \
-        "wmic diskdrive get Model"
-    p = sp.run(command, shell=True, capture_output=True, text=True)
-    ret = p.stdout.replace('Model', '').strip()
-    return [ info.strip() for info in ret.split('\n') if info != "" ]
-
-def get_test_product():
-    ensure_win()
-    all_disk = get_all_product()
-    os_disk = get_os_product()
-    return (set(all_disk) - set(os_disk))
-
 def import_module(module_name: str, module_path: str):
         
         # Check
