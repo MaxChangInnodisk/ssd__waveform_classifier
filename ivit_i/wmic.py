@@ -5,26 +5,56 @@ import platform
 import argparse
 
 def ensure_win(func):
+    """A decorator to ensure the os is windows"""
     def wrap(*args, **kwargs):
         assert platform.system() == "Windows", "Ensure the platform is Windows"
         return func(*args, **kwargs)
     return wrap
 
-@ensure_win
-def get_os_product():
-    command = \
-        "wmic /namespace:\\\\root\\microsoft\\windows\\storage path msft_disk WHERE \"BootFromDisk='true' and IsSystem='true'\" get model"
-    p = sp.run(command, shell=True, capture_output=True, text=True)
-    ret = p.stdout.replace('Model', '').strip()   
-    return [ info.strip() for info in ret.split('\n') if info != "" ]
+# @ensure_win
+# def get_os_product():
+#     command = \
+#         "wmic /namespace:\\\\root\\microsoft\\windows\\storage path msft_disk WHERE \"BootFromDisk='true' and IsSystem='true'\" get model"
+#     p = sp.run(command, shell=True, capture_output=True, text=True)
+#     ret = p.stdout.replace('Model', '').strip()   
+#     return [ info.strip() for info in ret.split('\n') if info != "" ]
 
-@ensure_win
+# @ensure_win
+# def get_all_product():
+#     command = \
+#         "wmic diskdrive get Model"
+#     p = sp.run(command, shell=True, capture_output=True, text=True)
+#     ret = p.stdout.replace('Model', '').strip()
+#     return [ info.strip() for info in ret.split('\n') if info != "" ]
+
+
+def get_name_from_ismart(idx):
+    command = \
+        r"iSMART_6.4.18\\iSMART.exe -d " + str(idx)
+    p = sp.run(command, shell=True, capture_output=True, text=True)
+    
+    for line in p.stdout.split('\n'):
+        if not 'Model Name' in line: continue
+        return line.split(':', 1)[1].strip()
+    raise RuntimeError('Can not find realmodel')
+
+
+def get_os_product():
+    """
+    wmic /namespace:\\root\microsoft\windows\storage path msft_disk WHERE "BootFromDisk='true' and IsSystem='true'" get Number
+    """
+    command = \
+        "wmic /namespace:\\\\root\\microsoft\\windows\\storage path msft_disk WHERE \"BootFromDisk='true' and IsSystem='true'\" get Number"
+    p = sp.run(command, shell=True, capture_output=True, text=True)
+    return [ get_name_from_ismart(line.strip()) for line in p.stdout.split('\n')[1:] if line ] 
+
+
 def get_all_product():
     command = \
-        "wmic diskdrive get Model"
+        "wmic diskdrive get Index"
     p = sp.run(command, shell=True, capture_output=True, text=True)
-    ret = p.stdout.replace('Model', '').strip()
-    return [ info.strip() for info in ret.split('\n') if info != "" ]
+    return [ get_name_from_ismart(line.strip()) for line in p.stdout.split('\n')[1:] if line ]
+    
 
 @ensure_win
 def get_test_product():
@@ -80,4 +110,12 @@ def main(args):
     # input('Wait for leave ...')
 
 if __name__ == "__main__":
-    main(build_args())
+    # main(build_args())
+    print('ALL: ',get_all_product())
+    print('OS: ',get_os_product())
+    print('TEST: ',get_test_product())
+
+
+"""
+wmic /namespace:\\root\microsoft\windows\storage path msft_disk WHERE "BootFromDisk='true' and IsSystem='true'" get model
+"""
