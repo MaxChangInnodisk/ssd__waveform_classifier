@@ -38,7 +38,8 @@ class DqeGT():
         target_disks = get_test_product()
         if len(target_disks) > 1:
             raise RuntimeError("The program only support one testing disk.")
-        
+        if len(target_disks)==0:
+            raise RuntimeError("Can not find any disks for testing.")
         self.ans = target_disks[0]
 
     def update_by_labels(self, labels: list) -> None:
