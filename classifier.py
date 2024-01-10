@@ -9,6 +9,19 @@ from ivit_i.utils import check_dir, read_json, read_ini
 
 import ctypes
 
+VER = "1.0.0"
+LOGO = f"""
+
+  ____     __        ______ 
+ / ___|    \ \      / / ___|
+ \___ \ ____\ \ /\ / / |    
+  ___) |_____\ V  V /| |___ 
+ |____/       \_/\_/  \____|
+
+            ( v{VER} )
+
+"""
+
 # 请求管理员权限运行cmd.exe
 # ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", "/k", None, 1)
 def is_admin():
@@ -56,6 +69,8 @@ def run_service(service:str, config:dict, username: str=''):
 
 def main():
     config = read_ini("config.ini")
+    
+    print(LOGO)
     # Exec
     run_service(service="aida64", config=config)
 
