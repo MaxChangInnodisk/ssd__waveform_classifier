@@ -1,21 +1,14 @@
 # -*- coding: UTF-8 -*-
 
-import cv2, sys, os, shutil, json, glob
+import os
 import logging as log
 from collections import defaultdict
-from typing import Any, Tuple, Dict, Literal
+from typing import Any, Dict, List
 
-try:
-    from ivit_i.common import dqe_logger
-    from ivit_i.utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
-    from ivit_i.dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
-    from ivit_i.wmic import get_test_product
-
-except:
-    from common import dqe_logger
-    from utils import read_ini, get_data, check_dir, clean_dir, write_json, copy_file
-    from dqe_io import DqeProcess, DqeInput, DqeOuput, DqeKeywordError, DqeConfigError, DqeModel
-    from wmic import get_test_product
+from .common import dqe_logger
+from .utils import read_ini, get_data, clean_dir, write_json, copy_file
+from .dqe_io import DqeProcess, DqeInput, DqeOuput, DqeConfigError, DqeModel
+from .wmic import get_test_product
 
 # Global
 RK          = "R"
@@ -32,7 +25,7 @@ def comb_name(items: list = [], sep: str="_"):
 
 # GT Helper
 class DqeGT():
-        
+    
     def __init__(self) -> None:
         
         target_disks = get_test_product()
@@ -41,7 +34,7 @@ class DqeGT():
         if len(target_disks)==0:
             raise RuntimeError("Can not find any disks for testing.")
         self.ans = target_disks[0]
-
+        
     def update_by_labels(self, labels: list) -> None:
         
         for label in labels:
@@ -66,12 +59,18 @@ class DqeMission():
         self.his_dir = os.path.join(config["output"]["history_dir"], "history" )
         self.cur_dir = os.path.join(config["output"]["current_dir"], "current" )
         clean_dir(self.cur_dir)
+        log.debug('Cleared Directory')
 
         # Get target disk
         self.GT = DqeGT()
+        log.debug('Get testing disk')
 
         # Logger
         self.dlog = dqe_logger(log_folder=self.his_dir)
+        log.debug('Created log file')
+
+        # Target Folder should not be exist
+
 
     def verify(self, models: dict):
         """
@@ -139,6 +138,8 @@ class DqeMission():
         
         # Prepare
         self.verify(models)
+        log.debug('Verified models')
+
         self.GT.update_by_labels(models[RK].labels)
         
         # Get result
@@ -149,8 +150,7 @@ class DqeMission():
                     else FAIL
         
         # Log out
-        self.dlog.info("-"*80)
-        self.dlog.info("")
+        self.dlog.info("[MISSION FINISHED]")
         self.dlog.info("[Basic]")
         new_date = [ models[RK].output.date[i:i+2] for i in range(0, len(models[RK].output.date),2) ]
         self.dlog.info("Date: {}".format('/'.join(new_date[0:3])+' '+':'.join(new_date[3:])))
@@ -243,17 +243,12 @@ def main():
     image_list = get_data(config["input"]["keyword"], config["input"]["input_dir"])
     assert len(image_list)==2, f"Expect two images in folder, but got {len(image_list)} !"
 
-    # Prepare process funcitno
-    dprocess = DqeProcess(
-        module_name="process", 
-        module_path=config["process"]["module_path"])
-
-    # Prepare Model and Output 
-    models = defaultdict()
-
     # Init Mission and update GT
     dmission = DqeMission(config=config)
     
+    # Prepare Model and Output 
+    models = defaultdict()
+
     # Load Model, Output, Mission
     keywords, config_keywords = [RK, WK ], ["read", "write"]
     for model_key, config_key in zip(keywords, config_keywords):
@@ -262,6 +257,11 @@ def main():
         except DqeConfigError as err:
             log.warning("The model setting is wrong. please check again")
             # raise err
+    # Prepare process funcitno
+    dprocess = DqeProcess(
+        module_name="process", 
+        module_path=config["process"]["module_path"])
+
 
     # Collect input
     dins = []
@@ -293,7 +293,78 @@ def main():
     except Exception as e:
         log.error("Mission Failed !")
         log.exception(e)
+
+# Main Object
+class SWC:
+
+    def __init__(self, config: dict) -> None:
+        
+        self.config = config
+        
+        self.dmission = DqeMission(config=config)
+        self.dinputs = None
+        self.models = None
+
+    def _get_inputs(self, config) -> List[DqeInput]:
+        # Get data, ensure the image_list's length is 2
+        image_list = get_data(config["input"]["keyword"], config["input"]["input_dir"])
+        assert len(image_list)==2, f"Expect two images in folder, but got {len(image_list)} !"
+        
+        dinputs = []
+        dprocess = DqeProcess(
+            module_name="process", 
+            module_path=config["process"]["module_path"])
+        for image in image_list:    
+            # Define DqeInput and get keyword
+            try:
+                dinputs.append(
+                    DqeInput(image_path=image, dqe_process=dprocess)
+                )
+            except:
+                log.warning("The input image is wrong: {}".format(image))
+                continue
+
+        if len(dinputs)!=2:
+            raise RuntimeError(f'The should must has two image, but get {len(dinputs)}')
+        if dinputs[0].keyword==dinputs[1].keyword:
+            raise RuntimeError(f"Both of two images is for {dinputs[0].keyword}.")
+        log.debug('Verified input image')
+
+        return dinputs
+
+    def _get_models(self, config) -> Dict[str, DqeModel]:
+        models = defaultdict()
+        keywords, config_keywords = [RK, WK ], ["read", "write"]
+        for model_key, config_key in zip(keywords, config_keywords):
+            try:
+                models[model_key] = DqeModel(config[f"model.{config_key}"])
+            except DqeConfigError as err:
+                log.warning("The model setting is wrong. please check again")
+                # raise err
+        return models
     
+    def load(self):
+        self.dinputs = self._get_inputs(self.config)
+        self.models = self._get_models(self.config)
+        log.debug('Loaded models')
+
+    def inference(self):
+        assert self.models, "Model not loaded, please use SWC.load()"
+        # Do inference
+        for dinput in self.dinputs:
+            # Checking models is ready
+            if not (dinput.keyword in self.models): continue
+            # Inference
+            self.models[dinput.keyword].inference(dinput)
+
+        # DQE Mission: After Inference
+        try:
+            return self.dmission(self.models)
+        except Exception as e:
+            log.error("Mission Failed !")
+            log.exception(e)
+
+
 if __name__ == "__main__":
     main()
 
