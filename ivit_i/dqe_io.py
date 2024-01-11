@@ -1,17 +1,13 @@
 
-import os, sys, cv2
+import os, cv2
 import numpy as np
 from datetime import datetime
 import shutil
 import json
 import logging as log
 
-try:
-    from ivit_i.core.models import iClassification
-    from ivit_i.utils import import_module, NpEncoder
-except:
-    from core.models import iClassification
-    from utils import import_module, NpEncoder
+from .core.models import iClassification
+from .utils import import_module, NpEncoder
 
 # --------------------------------------------------------------------------------
 
