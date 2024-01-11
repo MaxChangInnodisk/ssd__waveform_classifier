@@ -1,16 +1,16 @@
 # -*- coding: UTF-8 -*-
 
 import os
-import sys
 import json
 import glob
 import datetime
-import platform
-import subprocess as sp
 import configparser
 import importlib.util
 import shutil
 import numpy as np
+import ctypes
+import logging as log
+import platform
 
 def check_dir(trg_dir: str) -> str:
     """if directory is not exists then create it """
@@ -106,3 +106,30 @@ class NpEncoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NpEncoder, self).default(obj)
+
+def is_admin():
+    # ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", "/k", None, 1)
+    # try:
+    #     return ctypes.windll.shell32.IsUserAnAdmin()
+    # except:
+    #     return False
+    assert ctypes.windll.shell32.IsUserAnAdmin(), "Ensure using Administrator to execute the classifier.exe"
+    
+def is_win():
+    # return platform.system()
+    assert platform.system() == "Windows", "Ensure the platform is Windows"
+
+def check_env():
+    [ func() for func in (is_admin, is_win) ]
+
+def get_exec_cmd(exec_key: str, config: dict) -> str:
+    
+    exec_info = config[exec_key]
+    assert exec_info != None, f"Unexpect exec file key ... ({exec_key})"
+
+    cmd = f"{exec_info['exec']} {exec_info['args']}"
+    log.debug('Get execute command: {}'.format(cmd))
+    return cmd
+
+def check_status(service:str, config:dict) -> int:
+    return int(config[service]["enable"])

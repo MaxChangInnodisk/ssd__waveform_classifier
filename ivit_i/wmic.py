@@ -1,32 +1,14 @@
-import os
 import subprocess as sp
 import json
-import platform
 import argparse
+from .utils import is_win
 
 def ensure_win(func):
     """A decorator to ensure the os is windows"""
     def wrap(*args, **kwargs):
-        assert platform.system() == "Windows", "Ensure the platform is Windows"
+        is_win()
         return func(*args, **kwargs)
     return wrap
-
-# @ensure_win
-# def get_os_product():
-#     command = \
-#         "wmic /namespace:\\\\root\\microsoft\\windows\\storage path msft_disk WHERE \"BootFromDisk='true' and IsSystem='true'\" get model"
-#     p = sp.run(command, shell=True, capture_output=True, text=True)
-#     ret = p.stdout.replace('Model', '').strip()   
-#     return [ info.strip() for info in ret.split('\n') if info != "" ]
-
-# @ensure_win
-# def get_all_product():
-#     command = \
-#         "wmic diskdrive get Model"
-#     p = sp.run(command, shell=True, capture_output=True, text=True)
-#     ret = p.stdout.replace('Model', '').strip()
-#     return [ info.strip() for info in ret.split('\n') if info != "" ]
-
 
 def get_name_from_ismart(idx):
     command = \
@@ -38,7 +20,7 @@ def get_name_from_ismart(idx):
         return line.split(':', 1)[1].strip()
     raise RuntimeError('Can not find realmodel')
 
-
+@ensure_win
 def get_os_product():
     """
     wmic /namespace:\\root\microsoft\windows\storage path msft_disk WHERE "BootFromDisk='true' and IsSystem='true'" get Number
@@ -48,14 +30,13 @@ def get_os_product():
     p = sp.run(command, shell=True, capture_output=True, text=True)
     return [ get_name_from_ismart(line.strip()) for line in p.stdout.split('\n')[1:] if line ] 
 
-
+@ensure_win
 def get_all_product():
     command = \
         "wmic diskdrive get Index"
     p = sp.run(command, shell=True, capture_output=True, text=True)
     return [ get_name_from_ismart(line.strip()) for line in p.stdout.split('\n')[1:] if line ]
     
-
 @ensure_win
 def get_test_product():
     all_disk = get_all_product()
@@ -68,7 +49,6 @@ def save_json_file(os_disk: list, test_disk: list, json_path: str="disk.json", w
             "os": os_disk,
             "test": test_disk
         }, json_file, indent=4)
-
 
 
 def args_ext_check(fpath:str):
@@ -87,7 +67,6 @@ def build_args():
 
 def main(args):
     
-
     print("="*40)
     print("# CUSTOM WMIC PROGRAM. Created by Max")
     print("\n* Get all disks: ")
