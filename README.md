@@ -3,12 +3,10 @@ Classify the SSD read/write waveform by using iVIT.
 <table border="0">
  <tr>
     <td>
-
-![Alt text](docs/figures/iVIT-T-Logo.png)
+        <image src="docs/figures/iVIT-T-Logo.png" width=100%  style="background-color:white">
     </td>
     <td>
-
-![Alt text](docs/figures/iVIT-I-Logo-B.png)
+        <image src="docs/figures/iVIT-I-Logo-B.png" width=100% style="background-color:white">
     </td>
  </tr>
 </table>
@@ -20,10 +18,17 @@ Classify the SSD read/write waveform by using iVIT.
     * NOTE: must execute file.
     * NOTE: check network drive is mounted using [CheckNetworkDrive.bat](./CheckNetworkDrive.bat).
 1. Prepare AIDA64, Model, Process file.
+    <details>
+        <summary>Necessary files</summary>
+        <image src="./docs/figures/swc.jpg">
+    </details>
 1. Modify the path of each files in [`config.ini`](config.ini).
-2. Launch [`classifier.exe`](classifier.exe).
+2. Launch [`classifier.exe`](classifier.exe) with `Administrator`.
+    <details>
+        <summary>Screenshot</summary>
+        <image src="./docs/figures/screenshot.jpg">
+    </details>
 
-![sample](./docs/figures/swc.jpg)
 
 # Configuration
 
