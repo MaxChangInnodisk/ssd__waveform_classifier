@@ -55,6 +55,10 @@ def write_json(output:dict, json_file:str):
 def copy_file(src: str, dst: str):
     return shutil.copy(src, dst)
 
+def ensure_folder_not_exist(keyword: str, path: str= "./"): 
+    input_folders = glob.glob(os.path.join(path, f"*{keyword}*"))
+    assert len(input_folders)==0, f"The data folder should not be exists before executing AIDA64, but got {len(input_folders)}"
+
 def find_folder_with_key(keyword: str, path: str= "./"): 
     input_folders = glob.glob(os.path.join(path, f"*{keyword}*"))
     assert len(input_folders)==1, f"Except only one input folder here but got {len(input_folders)}"
@@ -108,18 +112,22 @@ class NpEncoder(json.JSONEncoder):
         return super(NpEncoder, self).default(obj)
 
 def is_admin():
+    import sys
     # ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", "/k", None, 1)
     # try:
     #     return ctypes.windll.shell32.IsUserAnAdmin()
     # except:
     #     return False
+    if not ctypes.windll.shell32.IsUserAnAdmin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
     assert ctypes.windll.shell32.IsUserAnAdmin(), "Ensure using Administrator to execute the classifier.exe"
     
 def is_win():
     # return platform.system()
     assert platform.system() == "Windows", "Ensure the platform is Windows"
 
-def check_env():
+def check_env():    
     [ func() for func in (is_admin, is_win) ]
 
 def get_exec_cmd(exec_key: str, config: dict) -> str:
