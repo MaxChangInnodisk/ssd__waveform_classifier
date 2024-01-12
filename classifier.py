@@ -5,7 +5,7 @@ import logging as log
 import subprocess as sp
 
 from ivit_i import dqe_handler
-from ivit_i.utils import read_ini, get_exec_cmd, check_status, check_env
+from ivit_i.utils import read_ini, get_exec_cmd, check_status, check_env, ensure_folder_not_exist
 
 VER = "1.0.0"
 LOGO = f"""
@@ -29,6 +29,9 @@ def run_aida64(service:str, config:dict):
     log.info(f"SERVICE {service}: {'ON' if status else 'OFF'}.")
     if not status: return
 
+    # Verify
+    ensure_folder_not_exist(config["input"]["keyword"], config["input"]["input_dir"])
+
     # Move to target folder
     trg_folder = os.path.abspath(os.path.dirname(config[service]["exec"]))
     config[service]["exec"] = f'.\{os.path.basename(config[service]["exec"])}'
@@ -41,24 +44,23 @@ def run_aida64(service:str, config:dict):
     sp.run(exec_cmd, shell=True)
 
 def main(config_path = r"config.ini"):
-    
-    # Checker
     check_env()
-
+    
     # Preparing
     print(LOGO)
     config = read_ini(config_path)
     
     # Init Model and Verify data
-    div('SWC')
-    swc = dqe_handler.SWC(config)
-
+    
+    
+    
     # AIDA64
-    div('AIDA64')
+    div('# AIDA64')
     run_aida64(service="aida64", config=config)
     
     # Inference with iVIT
-    div('INFER')
+    div('# INFER')
+    swc = dqe_handler.SWC(config)
     swc.load()
     swc.inference()
 
