@@ -2,6 +2,7 @@
 
 import logging as log
 import os
+import re
 from collections import defaultdict
 from typing import Any, Dict, List
 
@@ -25,6 +26,14 @@ def comb_name(items: list = [], sep: str = "_"):
     return sep.join(items)
 
 
+def remove_invalid_characters(filename):
+    # 定義 Windows 不支援的字元
+    invalid_chars = r'[\/:*?"<>|]'
+    # 使用 re.sub 來替換這些字元為空字串
+    cleaned_filename = re.sub(invalid_chars, "", filename)
+    return cleaned_filename
+
+
 # GT Helper
 class DqeGT:
     def __init__(self) -> None:
@@ -33,7 +42,7 @@ class DqeGT:
             raise RuntimeError("The program only support one testing disk.")
         if len(target_disks) == 0:
             raise RuntimeError("Can not find any disks for testing.")
-        self.ans = target_disks[0]
+        self.ans = remove_invalid_characters(target_disks[0])
 
     def update_by_labels(self, labels: list) -> None:
         for label in labels:
