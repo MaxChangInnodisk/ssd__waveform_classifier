@@ -18,7 +18,7 @@ POS = "positive"
 NEG = "negative"
 PASS = "PASS"
 FAIL = "FAIL"
-IMG_EXT = ".jpg"
+IMG_EXT = ".png"
 JSON_EXT = ".json"
 
 
