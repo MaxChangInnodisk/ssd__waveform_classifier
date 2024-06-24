@@ -160,8 +160,8 @@ class DqeMission:
         # print(models[RK].output.output)
         self.result = (
             PASS
-            if self.GT.compare(models[RK].output.output[0])
-            and self.GT.compare(models[WK].output.output[0])
+            if self.GT.compare(models[RK].output.output[0][1]) is True
+            and self.GT.compare(models[WK].output.output[0][1]) is True
             else FAIL
         )
 
