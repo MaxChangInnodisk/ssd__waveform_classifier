@@ -120,7 +120,7 @@ class DqeInput:
 
     def _parse_from_name(self, image_name: str) -> tuple:
         image_name, ext = os.path.splitext(image_name)
-        info = image_name.split("_")
+        info = image_name.rsplit("_", 3)
         return (image_name, ext, info[0], info[1], info[2], info[3])
 
     def _get_buffer(self, image_path) -> np.ndarray:
@@ -262,7 +262,7 @@ class DqeHistoryer:
 def _test_basic_usage():
     dprocess = DqeProcess()
     dinput = DqeInput(
-        image_path=r"real_data\realdata1_R_XX_YY.png", dqe_process=dprocess
+        image_path=r"real_datarealdata1_R_XX_YY.png", dqe_process=dprocess
     )
 
     dinput.print_all()
