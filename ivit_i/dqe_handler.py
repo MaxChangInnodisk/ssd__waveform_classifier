@@ -4,6 +4,7 @@ import logging as log
 import os
 import re
 from collections import defaultdict
+from datetime import datetime
 from typing import Any, Dict, List
 
 from .common import dqe_logger
@@ -157,21 +158,26 @@ class DqeMission:
         self.GT.update_by_labels(models[RK].labels)
 
         # Get result
-        # print(models[RK].output.output)
-        self.result = (
-            PASS
-            if self.GT.compare(models[RK].output.output[0][1]) is True
-            and self.GT.compare(models[WK].output.output[0][1]) is True
-            else FAIL
-        )
+        if models[RK].output and models[WK].output:
+            self.result = (
+                PASS
+                if self.GT.compare(models[RK].output.output[0][1]) is True
+                and self.GT.compare(models[WK].output.output[0][1]) is True
+                else FAIL
+            )
+            new_date = [
+                models[RK].output.date[i : i + 2]
+                for i in range(0, len(models[RK].output.date), 2)  # 20240517 -> 240517
+            ]
+
+        else:
+            self.result = FAIL
+            date = datetime.strftime(datetime.now(), "%y%m%d%H%M")
+            new_date = [date[i : i + 2] for i in range(0, len(date), 2)]
 
         # Log out
         self.dlog.info("[MISSION FINISHED]")
         self.dlog.info("[Basic]")
-        new_date = [
-            models[RK].output.date[i : i + 2]
-            for i in range(0, len(models[RK].output.date), 2)
-        ]
         self.dlog.info(
             "Date: {}".format("/".join(new_date[0:3]) + " " + ":".join(new_date[3:]))
         )
@@ -181,7 +187,7 @@ class DqeMission:
         # Parsing
         for key, model in models.items():
             din, dout = model.input, model.output
-            stats = POS if self.GT.compare(dout.output[0][1]) else NEG
+            stats = POS if dout and self.GT.compare(dout.output[0][1]) else NEG
 
             # File Handler
             re_name = self.get_retrain_path(status=stats, din=din, dout=dout)
@@ -194,7 +200,7 @@ class DqeMission:
             saved_json = {
                 "status": stats,
                 "name": din.name,
-                "detected": f"{dout.output[0][1]}",
+                "detected": dout.output[0][1] if dout else None,
                 "ground_truth": self.GT.ans,
                 "source_path": din.path,
                 "retrain_path": re_name + IMG_EXT,
