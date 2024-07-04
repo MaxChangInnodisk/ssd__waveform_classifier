@@ -70,10 +70,11 @@ def ensure_folder_not_exist(keyword: str, path: str = "./"):
 
 
 def find_folder_with_key(keyword: str, path: str = "./"):
-    input_folders = glob.glob(os.path.join(path, f"*{keyword}*"))
+    target_path = os.path.join(path, f"*{keyword}*")
+    input_folders = glob.glob(target_path)
     assert (
         len(input_folders) == 1
-    ), f"Except only one input folder here but got {len(input_folders)}"
+    ), f"Except only one input folder here but got {len(input_folders)} ({input_folders}, {keyword}, {path})"
 
     input_folder = input_folders[0]
     if not os.path.isdir(input_folder):
