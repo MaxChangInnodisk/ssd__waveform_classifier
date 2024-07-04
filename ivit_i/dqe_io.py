@@ -120,6 +120,8 @@ class DqeInput:
 
     def _parse_from_name(self, image_name: str) -> tuple:
         image_name, ext = os.path.splitext(image_name)
+        image_name = image_name.replace("_negative", "")
+        image_name = image_name.replace("_positive", "")
         info = image_name.rsplit("_", 3)
         return (image_name, ext, info[0], info[1], info[2], info[3])
 
