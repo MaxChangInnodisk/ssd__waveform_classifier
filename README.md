@@ -121,7 +121,7 @@ detect_data_keyword = W
         <summary>Modules</summary>
         
         ```bash
-        pip install opencv-python colorlog
+        pip install opencv-python colorlog tqdm openopenpyxl
         ```
         </details>
 
