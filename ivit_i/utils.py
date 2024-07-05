@@ -126,7 +126,7 @@ class NpEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
-        return super(NpEncoder, self).default(obj)
+        return super().default(obj)
 
 
 def is_admin():
@@ -158,7 +158,7 @@ def check_env():
 
 def get_exec_cmd(exec_key: str, config: dict) -> str:
     exec_info = config[exec_key]
-    assert exec_info != None, f"Unexpect exec file key ... ({exec_key})"
+    assert exec_info is not None, f"Unexpect exec file key ... ({exec_key})"
 
     cmd = f"{exec_info['exec']} {exec_info['args']}"
     log.debug(f"Get execute command: {cmd}")

@@ -13,24 +13,24 @@ from .utils import NpEncoder, import_module
 # --------------------------------------------------------------------------------
 
 
-class DqeModel:
-    None
+# class DqeModel:
+#     pass
 
 
-class DqeProcess:
-    None
+# class DqeProcess:
+#     pass
 
 
-class DqeInput:
-    None
+# class DqeInput:
+#     pass
 
 
-class DqeOuput:
-    None
+# class DqeOuput:
+#     pass
 
 
-class DqeHistoryer:
-    None
+# class DqeHistoryer:
+#     pass
 
 
 # --------------------------------------------------------------------------------
@@ -103,7 +103,9 @@ class DqeInput:
         self.buffer = self._get_buffer(self.path)
 
     def __default_process(
-        self, frame: np.ndarray, region: list = [55, 116, 669, 428]
+        self,
+        frame: np.ndarray,
+        region: list = [55, 116, 669, 428],  # noqa: B006
     ) -> np.ndarray:
         croped = frame[region[1] : region[3], region[0] : region[2]]
         gray = cv2.cvtColor(croped, cv2.COLOR_BGR2GRAY)
@@ -158,7 +160,7 @@ class DqeInput:
 
 
 class DqeOuput:
-    def __init__(self, input: DqeInput = None, output: list = []) -> None:
+    def __init__(self, input: DqeInput = None, output: list = []) -> None:  # noqa: B006
         """DqeInput
         - Arguments
             - input: DqeInput
@@ -180,7 +182,7 @@ class DqeOuput:
         self.input.print_all()
         self.print_information()
 
-    def update(self, input: DqeInput = None, output: list = []):
+    def update(self, input: DqeInput = None, output: list = []):  # noqa: B006
         self.input = input
         self.output = output
         self.length = len(output)
@@ -288,9 +290,8 @@ def _test_custom_process():
 
 
 if __name__ == "__main__":
+    r"""
+    python ivit_i\io_handler.py
+    """
     _test_basic_usage()
     _test_custom_process()
-
-r"""
-python ivit_i\io_handler.py 
-"""
