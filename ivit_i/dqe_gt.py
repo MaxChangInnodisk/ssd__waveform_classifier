@@ -6,20 +6,10 @@ import re
 
 from .wmic import get_test_product
 
-# Global
-RK = "R"
-WK = "W"
-POS = "positive"
-NEG = "negative"
-PASS = "PASS"
-FAIL = "FAIL"
-IMG_EXT = ".png"
-JSON_EXT = ".json"
-
 
 def remove_invalid_characters(filename):
     # 定義 Windows 不支援的字元
-    invalid_chars = r'[\/:*?"<>|]'
+    invalid_chars = r"[\/:*?\"'<>|]"
     # 使用 re.sub 來替換這些字元為空字串
     cleaned_filename = re.sub(invalid_chars, "", filename)
     return cleaned_filename
