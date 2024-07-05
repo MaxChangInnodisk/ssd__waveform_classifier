@@ -36,7 +36,7 @@ class DqeMission:
         log.debug("Cleared Directory")
 
         # Get target disk
-        if config["test-disk"]["enable"]:
+        if "test-disk" in config and config["test-disk"]["enable"]:
             self.GT = MockDqeGT(disk_name=config["test-disk"]["disk_name"])
         else:
             self.GT = DqeGT()
