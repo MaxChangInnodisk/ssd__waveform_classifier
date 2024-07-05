@@ -42,6 +42,11 @@ enable = 0
 exec = ..\aida64\autoConnectTool_aida64_v598_USBnonSupport_.exe
 args =
 
+[test-disk]
+describe = Use to mock the real disk, this option is not necessary
+enable = 0
+disk_name = 4TE6
+
 [input]
 describe = Input data folder
 input_dir = C:\Users\DQE\Desktop\aida64
