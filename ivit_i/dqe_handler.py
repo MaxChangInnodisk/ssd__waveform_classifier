@@ -228,8 +228,8 @@ class SWC:
             # Define DqeInput and get keyword
             try:
                 dinputs.append(DqeInput(image_path=image, dqe_process=dprocess))
-            except BaseException:
-                log.warning(f"The input image is wrong: {image}")
+            except BaseException as e:
+                log.warning(f"The input image is wrong: {image} ({e})")
                 continue
 
         if len(dinputs) != 2:
@@ -247,8 +247,10 @@ class SWC:
             try:
                 models[model_key] = DqeModel(config[f"model.{config_key}"])
             except DqeConfigError:
-                log.warning("The model setting is wrong. please check again")
+                pass
+                # log.warning("The model setting is wrong. please check again")
                 # raise err
+        log.info(f"Get {', '.join(models.keys())} Model")
         return models
 
     def load(self):
