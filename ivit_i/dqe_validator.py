@@ -124,6 +124,29 @@ class SWCForValidator(SWC):
                 continue
         return dinputs
 
+    def _get_models(self, config) -> Dict[str, DqeModel]:
+        from collections import defaultdict
+
+        models = defaultdict()
+        keywords, config_keywords = [RK, WK], ["read", "write"]
+        for model_key, config_key in zip(keywords, config_keywords):
+            title = f"model.{config_key}"
+            if title not in config:
+                log.warning(f"not setup {config_key} in config")
+                continue
+            try:
+                if int(config[title]["enable"]) == 0:
+                    log.warning(f"disable model {model_key}")
+                    continue
+
+                models[model_key] = DqeModel(config[title])
+            except BaseException:
+                pass
+                # log.warning("The model setting is wrong. please check again")
+                # raise err
+        log.info(f"Get {', '.join(models.keys())} Model")
+        return models
+
     def inference(self):
         assert self.models, "Model not loaded, please use SWC.load()"
         assert len(self.models) == 1, "Only support 1 model in validator.ini"
