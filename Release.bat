@@ -7,7 +7,8 @@ rem 安装PyInstaller
 python -m pip install pyinstaller
 
 rem 执行python release命令
-python release
+python release\classifier.py
+python release\validator.py
 
 rem 关闭OpenVINO环境
 call openvino_env\Scripts\deactivate
