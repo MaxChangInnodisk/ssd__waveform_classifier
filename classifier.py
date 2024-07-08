@@ -51,7 +51,7 @@ def run_aida64(service: str, config: dict):
     sp.run(exec_cmd, shell=True)
 
 
-def main(config_path=r"config.ini"):
+def main(config_path=r"classifier.ini"):
     check_env()
 
     # Preparing
