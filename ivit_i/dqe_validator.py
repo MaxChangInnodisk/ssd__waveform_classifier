@@ -150,12 +150,13 @@ class SWCForValidator(SWC):
     def inference(self):
         assert self.models, "Model not loaded, please use SWC.load()"
         assert len(self.models) == 1, "Only support 1 model in validator.ini"
+        model_keyword = list(self.models.keys())[0]
         # Filter input
         log.info("Filter wrong input ...")
         wrong_inputs: List[list] = []
         need_remove = []
         for dinput in self.dinputs:
-            if dinput.keyword not in self.models:
+            if dinput.keyword != model_keyword:
                 wrong_inputs.append(
                     XmlFailedData(file_name=dinput.path, error="wrong_key")
                 )
@@ -184,13 +185,14 @@ class SWCForValidator(SWC):
         num_tot = len(output_data)
         num_pos = len([data for data in output_data if data.result == POS])
         num_neg = num_tot - num_pos
+        rate = int((num_pos / num_tot) * 100) if num_tot and num_pos else 0
         basic_info = XmlBasicInfo(
             disk_name=self.GT.ans,
-            keyword=self.dinputs[0].keyword,
+            keyword=model_keyword,
             total_num=num_tot,
             positive_num=num_pos,
             negative_num=num_neg,
-            rate=int((num_pos / num_tot) * 100),
+            rate=rate,
         )
         self.xml_handler.first_ws.title = "Overview"
         self.xml_handler.first_ws.append(["Category", "Content"])
