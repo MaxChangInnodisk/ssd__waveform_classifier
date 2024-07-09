@@ -121,7 +121,12 @@ class DqeMission:
         self.GT.update_by_labels(models[RK].labels)
 
         # Get result
-        if models[RK].output and models[WK].output:
+        if (
+            models[RK].output.output
+            and models[WK].output.output
+            and models[RK].output.output[0]
+            and models[WK].output.output[0]
+        ):
             self.result = (
                 PASS
                 if self.GT.compare(models[RK].output.output[0][1]) is True
