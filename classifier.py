@@ -13,7 +13,7 @@ from ivit_i.utils import (
     read_ini,
 )
 
-VER = "1.0.0"
+VER = "1.1.0"
 LOGO = rf"""
 
   ____     __        ______
